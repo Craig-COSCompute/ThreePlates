@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Three Plates</title>
+<meta name="description" content="Plan dinners for one or two weeks, get AI meal ideas, and turn it all into one grocery list. Free, private, and saved on your device.">
+<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1A201C" media="(prefers-color-scheme: dark)">
+<meta name="color-scheme" content="light dark">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/icons/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/icons/icon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="Three Plates">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta property="og:title" content="Three Plates">
+<meta property="og:description" content="A free, private dinner planner that runs entirely in your browser.">
+<meta property="og:image" content="/icons/icon-512.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Young+Serif&display=swap">
+<link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <svg viewBox="0 0 66 26" width="56" height="22" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="13" r="10"/><circle cx="12" cy="13" r="5.5"/><circle cx="35" cy="13" r="10"/><circle cx="35" cy="13" r="5.5"/><circle cx="56.5" cy="15" r="7.5"/><circle cx="56.5" cy="15" r="3.8"/></g></svg>
+      <div>
+        <h1>Three Plates</h1>
+        <p class="sub" id="sub">Plan dinners, then shop them</p>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button class="tab" role="tab" id="tab-ideas" data-tab="ideas" aria-controls="p-ideas" aria-selected="true">Ideas</button>
+      <button class="tab" role="tab" id="tab-favs" data-tab="favs" aria-controls="p-favs" aria-selected="false">Favorites <span class="count" id="c-favs"></span></button>
+      <button class="tab" role="tab" id="tab-week" data-tab="week" aria-controls="p-week" aria-selected="false">Plan <span class="count" id="c-week"></span></button>
+      <button class="tab" role="tab" id="tab-shop" data-tab="shop" aria-controls="p-shop" aria-selected="false">Shop <span class="count" id="c-shop"></span></button>
+      <button class="tab tab-gear" role="tab" id="tab-settings" data-tab="settings" aria-controls="p-settings" aria-selected="false" title="Settings"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M10.3 3h3.4l.5 2.4c.6.2 1.2.6 1.7 1l2.3-.8 1.7 3-1.8 1.6a6.6 6.6 0 0 1 0 2l1.8 1.6-1.7 3-2.3-.8c-.5.4-1.1.8-1.7 1l-.5 2.4h-3.4l-.5-2.4c-.6-.2-1.2-.6-1.7-1l-2.3.8-1.7-3 1.8-1.6a6.6 6.6 0 0 1 0-2L3.6 8.6l1.7-3 2.3.8c.5-.4 1.1-.8 1.7-1z"/><circle cx="12" cy="12" r="2.8" fill="none" stroke="currentColor" stroke-width="1.8"/></svg><span class="sr">Settings</span></button>
+    </nav>
+  </div>
+</header>
+
+<div class="notice" id="notice" hidden><div class="wrap" id="notice-text"></div></div>
+<div class="notice" id="backup-note" hidden>
+  <div class="wrap backup-row">
+    <span id="backup-text"></span>
+    <span class="row"><button class="btn small primary" type="button" id="bn-now">Back up now</button><button class="btn small ghost" type="button" id="bn-later">Later</button></span>
+  </div>
+</div>
+
+<main class="wrap">
+  <div class="tonight" id="tonight" hidden></div>
+  <div class="card rate-card" id="lastnight" hidden></div>
+
+  <!-- IDEAS -->
+  <section class="panel" id="p-ideas" role="tabpanel" aria-labelledby="tab-ideas">
+    <div class="card" id="welcome" hidden></div>
+    <div class="card">
+      <div class="hh">
+        <div class="hh-row">
+          <span class="label">Cooking for</span>
+          <div class="hh-links">
+            <span class="stepper" role="group" aria-label="How many people you cook for">
+              <button type="button" id="pp-minus" aria-label="Fewer people">−</button>
+              <span class="stepper-n" id="pp-count" aria-live="polite">3 people</span>
+              <button type="button" id="pp-plus" aria-label="More people">+</button>
+            </span>
+            <button class="link" type="button" id="hh-edit">Edit notes</button>
+          </div>
+        </div>
+        <p class="hh-text" id="hh-text"></p>
+        <div class="field" id="hh-form" hidden>
+          <label class="sr" for="hh-input">Who you're cooking for</label>
+          <textarea id="hh-input" rows="3" placeholder="e.g. 2 adults and a 6-year-old. No mushrooms. Busy Tuesdays and Thursdays."></textarea>
+          <div class="row">
+            <button class="btn small primary" type="button" id="hh-save">Save</button>
+            <button class="btn small ghost" type="button" id="hh-cancel">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="hh">
+        <div class="hh-row">
+          <span class="label">Already in the kitchen</span>
+          <div class="hh-links">
+            <label class="link" for="oh-file" id="oh-scan" hidden>Scan a photo</label>
+            <button class="link" type="button" id="oh-edit">Edit</button>
+          </div>
+        </div>
+        <input type="file" id="oh-file" class="sr" accept="image/*" multiple>
+        <p class="hh-text" id="oh-text"></p>
+        <div class="field" id="oh-form" hidden>
+          <div class="extras-list" id="oh-chips"></div>
+          <form class="extra-form" id="oh-add">
+            <label class="sr" for="oh-input">Add something you have</label>
+            <input type="text" id="oh-input" placeholder="eggs, rice, frozen peas" autocomplete="off">
+            <button class="btn small" type="submit">Add</button>
+          </form>
+          <div class="row" style="justify-content:space-between">
+            <button class="btn small primary" type="button" id="oh-done">Done</button>
+            <button class="link danger" type="button" id="oh-clear">Clear all</button>
+          </div>
+        </div>
+        <p class="status" id="oh-status" hidden></p>
+      </div>
+
+      <label class="ask-title" for="ask-input">What sounds good this week?</label>
+      <textarea id="ask-input" rows="3" placeholder="Need to keep it cheap next week. Dinner ideas that share a lot of the same cheaper ingredients."></textarea>
+      <div class="chips" id="quick-chips"></div>
+      <div class="ask-row">
+        <label class="count-pick" for="ask-count">Ideas per ask
+          <select id="ask-count"><option>4</option><option>6</option><option>7</option><option>8</option><option>10</option><option>12</option><option selected>14</option></select>
+        </label>
+        <span class="grow"></span>
+        <button class="btn ghost" type="button" id="ask-stop" hidden>Stop</button>
+        <button class="btn primary" type="button" id="ask-go">Get ideas</button>
+      </div>
+      <p class="status" id="ask-status" hidden></p>
+      <div class="banner" id="ai-off" hidden>
+        <p>Meal ideas need an AI provider. Several offer free keys, and your key stays on this device.</p>
+        <div><button class="btn small primary" type="button" id="ai-off-go">Set up AI in Settings</button></div>
+      </div>
+    </div>
+    <div id="ideas-list" class="panel"></div>
+  </section>
+
+  <!-- FAVORITES -->
+  <section class="panel" id="p-favs" role="tabpanel" aria-labelledby="tab-favs" hidden>
+    <div class="section-head">
+      <h2>Meals we love</h2>
+      <button class="btn" type="button" id="fav-new">Add a meal</button>
+    </div>
+    <form class="card" id="fav-form" hidden>
+      <div class="field">
+        <label for="fav-name">Meal name</label>
+        <input type="text" id="fav-name" placeholder="e.g. Taco night" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="fav-url">Recipe link <span class="muted">(optional)</span></label>
+        <input type="url" id="fav-url" placeholder="Paste a link to the recipe" autocomplete="off" inputmode="url">
+      </div>
+      <div class="field">
+        <div class="field-top">
+          <label for="fav-ings">Ingredients, one per line</label>
+          <div class="hh-links">
+            <button class="link" type="button" id="imp-toggle">Import from recipe</button>
+            <button class="link" type="button" id="fav-suggest">Suggest with AI</button>
+          </div>
+        </div>
+        <div class="imp" id="imp" hidden>
+          <label for="imp-text">Paste the recipe</label>
+          <textarea id="imp-text" rows="5" placeholder="On the recipe page, select the ingredients and steps, copy them, and paste here."></textarea>
+          <div class="row">
+            <button class="btn small primary" type="button" id="imp-go">Pull out ingredients</button>
+            <label class="btn small" for="imp-file" id="imp-photo" hidden>Use a screenshot or photo</label>
+          </div>
+          <input type="file" id="imp-file" class="sr" accept="image/*" multiple>
+        </div>
+        <textarea id="fav-ings" rows="7" placeholder="Type them one per line, or let the AI guess them from the meal name."></textarea>
+        <p class="status" id="fav-status" hidden></p>
+      </div>
+      <div class="field">
+        <label for="fav-serves">Serves</label>
+        <input type="number" id="fav-serves" min="1" max="50" step="1" inputmode="numeric" style="width:7em">
+      </div>
+      <div class="field">
+        <label for="fav-sec">Section</label>
+        <select id="fav-sec" style="width:100%"></select>
+        <input type="text" id="fav-sec-new" placeholder="Name it, e.g. Soups or Slow cooker" autocomplete="off" hidden>
+      </div>
+      <div class="field">
+        <label for="fav-notes">Notes <span class="muted">(optional)</span></label>
+        <input type="text" id="fav-notes" placeholder="e.g. Make extra rice for lunches" autocomplete="off">
+      </div>
+      <div class="row">
+        <button class="btn primary" type="submit" id="fav-save">Save meal</button>
+        <button class="btn ghost" type="button" id="fav-cancel">Cancel</button>
+      </div>
+    </form>
+    <label class="sr" for="fav-filter">Search favorites</label>
+    <input type="search" id="fav-filter" placeholder="Search favorites" hidden>
+    <div class="chips" id="fav-filters" hidden></div>
+    <div id="favs-list" class="panel"></div>
+  </section>
+
+  <!-- THIS WEEK -->
+  <section class="panel" id="p-week" role="tabpanel" aria-labelledby="tab-week" hidden>
+    <div class="section-head">
+      <h2 id="week-title">Planned dinners</h2>
+    </div>
+    <div class="card">
+      <div class="cfg-row">
+        <span class="label">Shopping for</span>
+        <div class="seg" role="group" aria-label="How long this order covers">
+          <button type="button" id="len-1" data-weeks="1" aria-pressed="false">1 week</button>
+          <button type="button" id="len-2" data-weeks="2" aria-pressed="true">2 weeks</button>
+        </div>
+      </div>
+      <div class="cfg-row">
+        <label class="label" for="plan-start">Starting</label>
+        <input type="date" id="plan-start">
+      </div>
+      <div class="cfg-row">
+        <label class="label" for="plan-budget">Budget for this order</label>
+        <span class="money"><span aria-hidden="true">$</span><input type="number" id="plan-budget" min="0" step="5" inputmode="numeric" placeholder="None"></span>
+      </div>
+      <div class="cfg-row">
+        <span class="label">Add a night</span>
+        <div class="row">
+          <button class="btn small" type="button" data-special="leftovers">Leftovers</button>
+          <button class="btn small" type="button" data-special="out">Eating out</button>
+          <span id="pick-btns" class="row"></span>
+        </div>
+      </div>
+      <div class="cfg-row">
+        <p class="muted" style="font-size:.92rem" id="plan-range"></p>
+        <button class="btn small" type="button" id="fill-nights" hidden>Fill open nights</button>
+      </div>
+    </div>
+    <div id="week-list" class="panel"></div>
+    <div class="card" id="prep-card" hidden></div>
+    <div class="card">
+      <div>
+        <h2 class="small">Also need</h2>
+        <p class="muted" style="font-size:.92rem">Breakfast, lunches, snacks, or anything else for this order.</p>
+      </div>
+      <form class="extra-form" id="extra-form">
+        <label class="sr" for="extra-input">Add an item</label>
+        <input type="text" id="extra-input" placeholder="milk, eggs, paper towels" autocomplete="off">
+        <button class="btn" type="submit">Add</button>
+      </form>
+      <div class="extras-list" id="extras-list"></div>
+      <div class="subhead">
+        <h3>Regulars</h3>
+        <div class="hh-links">
+          <button class="btn small" type="button" id="reg-all">Add all</button>
+          <button class="link" type="button" id="reg-edit">Edit</button>
+        </div>
+      </div>
+      <div class="extras-list" id="reg-list"></div>
+      <form class="extra-form" id="reg-form" hidden>
+        <label class="sr" for="reg-input">Add a weekly regular</label>
+        <input type="text" id="reg-input" placeholder="milk, eggs, bread, coffee" autocomplete="off">
+        <button class="btn small" type="submit">Save</button>
+      </form>
+    </div>
+    <div class="week-go">
+      <button class="btn primary" type="button" id="go-shop">Build shopping list</button>
+    </div>
+    <div class="card" id="hist-card" hidden>
+      <div>
+        <h2 class="small">Past plans</h2>
+        <p class="muted" style="font-size:.92rem">Rate dinners you've eaten, save the keepers to Favorites, or add a whole plan back.</p>
+      </div>
+      <div id="hist-list" class="panel" style="gap:10px"></div>
+    </div>
+    <div class="card">
+      <div id="nw-start" class="row" style="justify-content:space-between">
+        <span class="muted" style="font-size:.92rem">Done with this plan? Save it to Past plans and start fresh.</span>
+        <button class="btn small ghost danger" type="button" id="nw-ask">Start a new plan</button>
+      </div>
+      <div class="confirm" id="nw-confirm" hidden>
+        <p>This saves the plan to Past plans, then clears planned dinners, extra items, ideas and the shopping list. Favorites, regulars and ratings stay, and you can still rate dinners from Past plans.</p>
+        <label class="carry" id="nw-carry-row" for="nw-carry"><input type="checkbox" id="nw-carry" checked> <span>Have the AI add likely leftovers, like the rest of a bag of rice, to "Already in the kitchen"</span></label>
+        <p class="status" id="nw-status" hidden></p>
+        <div class="row">
+          <button class="btn danger solid" type="button" id="nw-yes">Save and start over</button>
+          <button class="btn ghost" type="button" id="nw-no">Keep this week</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SHOP -->
+  <section class="panel" id="p-shop" role="tabpanel" aria-labelledby="tab-shop" hidden>
+    <div id="shop-top" class="panel"></div>
+    <div id="shop-list"></div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section class="panel" id="p-settings" role="tabpanel" aria-labelledby="tab-settings" hidden>
+    <div class="section-head"><h2>Settings</h2></div>
+
+    <div class="card" id="ai-card">
+      <div>
+        <h2 class="small">AI assistant</h2>
+        <p class="muted" style="font-size:.92rem">Optional. Meal ideas, ingredient guessing, recipe import, photo scans, prep plans and budget swaps use an AI model with your own API key. The key stays in this browser and is only sent to the provider you choose.</p>
+        <p class="hint" id="ai-current"></p>
+      </div>
+      <div class="field">
+        <label for="ai-provider">Provider</label>
+        <select id="ai-provider" style="width:100%"></select>
+        <p class="hint" id="ai-note"></p>
+        <a class="link" id="ai-keylink" href="#" target="_blank" rel="noopener noreferrer" hidden>Get a key ↗</a>
+      </div>
+      <div class="field">
+        <label for="ai-key">API key</label>
+        <div class="extra-form">
+          <input type="password" id="ai-key" autocomplete="off" spellcheck="false" placeholder="Paste your key">
+          <button class="btn small" type="button" id="ai-show">Show</button>
+        </div>
+      </div>
+      <div class="field">
+        <div class="field-top"><label for="ai-model">Model</label><button class="link" type="button" id="ai-load">Load models</button></div>
+        <input type="text" id="ai-model" list="ai-models" autocomplete="off" spellcheck="false">
+        <datalist id="ai-models"></datalist>
+      </div>
+      <div class="field" id="ai-base-field" hidden>
+        <label for="ai-base">API address</label>
+        <input type="url" id="ai-base" autocomplete="off" spellcheck="false" placeholder="https://example.com/v1">
+      </div>
+      <label class="carry" for="ai-vision"><input type="checkbox" id="ai-vision"> <span>This model can read photos (fridge scans and recipe screenshots)</span></label>
+      <div class="row">
+        <button class="btn primary" type="button" id="ai-save">Save</button>
+        <button class="btn" type="button" id="ai-test">Test</button>
+        <button class="btn ghost danger" type="button" id="ai-remove">Remove key</button>
+      </div>
+      <p class="status" id="ai-status" hidden></p>
+    </div>
+
+    <div class="card">
+      <div>
+        <h2 class="small">Household</h2>
+        <p class="muted" style="font-size:.92rem">Add the people you cook for. Each person gets a "liked it" button on meals and their own pick nights.</p>
+      </div>
+      <div class="extras-list" id="mem-list"></div>
+      <form class="extra-form" id="mem-form">
+        <label class="sr" for="mem-input">Name</label>
+        <input type="text" id="mem-input" placeholder="A name, like Ava" autocomplete="off" maxlength="30">
+        <button class="btn" type="submit">Add</button>
+      </form>
+    </div>
+
+    <div class="card" id="sync-card" hidden>
+      <div>
+        <h2 class="small">Family sync</h2>
+        <p class="muted" style="font-size:.92rem">Optional. Sign in to share one plan, your favorites and the shopping list with your household on every device. Synced data is stored in Azure. Your AI key never leaves this device. <a class="link" href="/privacy.html">Privacy</a></p>
+      </div>
+      <div id="sy-out" hidden>
+        <p class="hint" id="sy-out-note"></p>
+        <div class="row">
+          <button class="btn primary" type="button" id="sy-ms">Sign in with Microsoft</button>
+          <button class="btn" type="button" id="sy-gh">Sign in with GitHub</button>
+        </div>
+      </div>
+      <div id="sy-in" hidden>
+        <p class="hint" id="sy-who"></p>
+        <div id="sy-none" hidden>
+          <div class="field">
+            <label for="sy-name">Your name in the household</label>
+            <input type="text" id="sy-name" maxlength="30" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="sy-hh">Start a household</label>
+            <div class="extra-form">
+              <input type="text" id="sy-hh" maxlength="40" autocomplete="off" placeholder="A name, like The Martinez Kitchen">
+              <button class="btn primary" type="button" id="sy-create">Create</button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="sy-code">Or join one with an invite code</label>
+            <div class="extra-form">
+              <input type="text" id="sy-code" maxlength="12" autocomplete="off" spellcheck="false" autocapitalize="characters" placeholder="8-character code">
+              <button class="btn" type="button" id="sy-join">Join</button>
+            </div>
+          </div>
+        </div>
+        <div id="sy-hh-box" hidden>
+          <p class="sy-head"><strong id="sy-hh-name"></strong> <span class="muted" id="sy-state"></span></p>
+          <div class="extras-list" id="sy-members"></div>
+          <div class="row">
+            <button class="btn" type="button" id="sy-invite">Invite someone</button>
+            <button class="btn ghost" type="button" id="sy-now">Sync now</button>
+          </div>
+          <div class="confirm" id="sy-invite-box" hidden>
+            <p>Share this code or link. It works for 7 days, for up to 10 people.</p>
+            <p class="sy-code" id="sy-invite-code"></p>
+            <div class="row"><button class="btn small" type="button" id="sy-share">Share invite link</button></div>
+          </div>
+        </div>
+        <div class="confirm" id="sy-confirm" hidden>
+          <p id="sy-confirm-text"></p>
+          <div class="row">
+            <button class="btn danger solid" type="button" id="sy-yes"></button>
+            <button class="btn ghost" type="button" id="sy-no">Cancel</button>
+          </div>
+        </div>
+        <div class="row">
+          <button class="btn ghost small" type="button" id="sy-unlink" hidden>Stop syncing on this device</button>
+          <button class="btn ghost danger small" type="button" id="sy-leave" hidden>Leave household</button>
+          <button class="btn ghost small" type="button" id="sy-signout">Sign out</button>
+          <button class="btn ghost danger small" type="button" id="sy-delete">Delete my sync data</button>
+        </div>
+      </div>
+      <p class="status" id="sy-status" hidden></p>
+    </div>
+
+    <div class="card">
+      <div>
+        <h2 class="small">Backup</h2>
+        <p class="muted" style="font-size:.92rem">Everything is saved only in this browser. Download a backup now and then. You can also use one to move your plan to another device or share it with family.</p>
+      </div>
+      <p class="hint" id="bk-last"></p>
+      <div class="row">
+        <button class="btn primary" type="button" id="bk-export">Download backup</button>
+        <label class="btn" for="bk-file">Restore from backup</label>
+      </div>
+      <input type="file" id="bk-file" class="sr" accept="application/json,.json">
+      <div class="confirm" id="bk-confirm" hidden>
+        <p id="bk-summary"></p>
+        <div class="row">
+          <button class="btn danger solid" type="button" id="bk-yes">Replace with backup</button>
+          <button class="btn ghost" type="button" id="bk-no">Cancel</button>
+        </div>
+      </div>
+      <p class="status" id="bk-status" hidden></p>
+    </div>
+
+    <div class="card">
+      <h2 class="small">This device</h2>
+      <p class="hint" id="dev-storage"></p>
+      <div class="row"><button class="btn" type="button" id="dev-install" hidden>Install the app</button></div>
+      <p class="hint" id="dev-ios" hidden>On iPhone or iPad, tap Share, then Add to Home Screen. Installed apps are protected from Safari's automatic cleanup.</p>
+    </div>
+
+    <div class="card">
+      <h2 class="small">About</h2>
+      <p class="muted" style="font-size:.92rem">Three Plates is a free, open-source meal planner. You don't need an account. Your plan lives on your device unless you turn on Family sync, which keeps your household's copy in Azure. AI requests go straight from your browser to the provider you pick.</p>
+      <p><a class="link" href="/privacy.html">Privacy</a></p>
+      <p><a class="link" id="src-link" href="https://github.com/" target="_blank" rel="noopener noreferrer">Source code on GitHub ↗</a></p>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script src="/js/store.js"></script>
+<script src="/js/sync.js"></script>
+<script src="/js/ai.js"></script>
+<script src="/js/app.js"></script>
+</body>
+</html>

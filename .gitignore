@@ -1,0 +1,16 @@
+.DS_Store
+Thumbs.db
+node_modules/
+*.log
+.env
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+crash.log
+
+# Functions API
+api/local.settings.json

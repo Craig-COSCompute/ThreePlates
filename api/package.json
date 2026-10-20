@@ -1,0 +1,14 @@
+{
+  "name": "three-plates-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Family sync API for Three Plates (Azure Static Web Apps managed functions).",
+  "main": "src/functions/*.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@azure/cosmos": "^4.10.1",
+    "@azure/functions": "^4.16.5"
+  }
+}
